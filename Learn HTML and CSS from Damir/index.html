@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Master на JavaScript</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0e27;
+            color: #00ff9d;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #1a1f3a;
+            border: 2px solid #00ff9d;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+        }
+        
+        .logo {
+            font-family: monospace;
+            white-space: pre;
+            color: #00ff9d;
+            text-align: center;
+            font-size: 12px;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+        
+        .header {
+            border-bottom: 2px solid #00ff9d;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .menu-btn {
+            background: #0a0e27;
+            border: 1px solid #00ff9d;
+            color: #00ff9d;
+            padding: 15px;
+            font-family: inherit;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 5px;
+        }
+        
+        .menu-btn:hover {
+            background: #00ff9d;
+            color: #0a0e27;
+            transform: scale(1.05);
+        }
+        
+        .content {
+            background: #0a0e27;
+            border: 1px solid #00ff9d;
+            border-radius: 5px;
+            padding: 20px;
+            min-height: 400px;
+            margin-top: 20px;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            background: #0a0e27;
+            border: 1px solid #00ff9d;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #0a0e27;
+            border: 1px solid #00ff9d;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #00ff9d;
+            transition: width 0.3s;
+        }
+        
+        .lesson-list {
+            list-style: none;
+        }
+        
+        .lesson-item {
+            padding: 10px;
+            border-bottom: 1px solid #00ff9d;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .lesson-item:hover {
+            background: #00ff9d20;
+        }
+        
+        .lesson-item.completed {
+            color: #00ff9d;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+        
+        .code-block {
+            background: #000;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+        
+        .task {
+            background: #1a1f3a;
+            border-left: 4px solid #00ff9d;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .options {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        
+        .option-btn {
+            background: #0a0e27;
+            border: 1px solid #00ff9d;
+            color: #00ff9d;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .option-btn:hover {
+            background: #00ff9d;
+            color: #0a0e27;
+        }
+        
+        .option-btn.correct {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .option-btn.wrong {
+            background: #ff0000;
+            color: #fff;
+        }
+        
+        input, textarea {
+            background: #0a0e27;
+            border: 1px solid #00ff9d;
+            color: #00ff9d;
+            padding: 10px;
+            font-family: inherit;
+            width: 100%;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        button {
+            background: #0a0e27;
+            border: 1px solid #00ff9d;
+            color: #00ff9d;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: inherit;
+            border-radius: 5px;
+        }
+        
+        button:hover {
+            background: #00ff9d;
+            color: #0a0e27;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app"></div>
+
+    <script>
+        class HTMLMasterJS {
+            constructor() {
+                this.name = "HTML MASTER v2.0 (JavaScript Edition)";
+                this.user = null;
+                this.level = 1;
+                this.xp = 0;
+                this.xpNeeded = 100;
+                this.completedLessons = [];
+                this.currentView = 'menu';
+                this.currentLesson = null;
+                this.currentTest = null;
+                this.testAnswers = [];
+                
+                this.loadProgress();
+                this.render();
+            }
+            
+            loadProgress() {
+                try {
+                    const saved = localStorage.getItem('htmlMasterProgress');
+                    if (saved) {
+                        const data = JSON.parse(saved);
+                        this.user = data.user || null;
+                        this.level = data.level || 1;
+                        this.xp = data.xp || 0;
+                        this.completedLessons = data.completed || [];
+                    }
+                } catch (e) {
+                    console.log('Нет сохранений');
+                }
+            }
+            
+            saveProgress() {
+                const data = {
+                    user: this.user,
+                    level: this.level,
+                    xp: this.xp,
+                    completed: this.completedLessons
+                };
+                localStorage.setItem('htmlMasterProgress', JSON.stringify(data));
+            }
+            
+            levelUp() {
+                this.level++;
+                this.xp -= this.xpNeeded;
+                this.xpNeeded = Math.floor(this.xpNeeded * 1.5);
+                this.showMessage(`🌟 УРОВЕНЬ ПОВЫШЕН ДО ${this.level}!`);
+            }
+            
+            showMessage(msg) {
+                alert(msg);
+            }
+            
+            render() {
+                const app = document.getElementById('app');
+                app.innerHTML = this.getHeader() + this.getContent();
+            }
+            
+            getHeader() {
+                return `
+                    <div class="header">
+                        <div class="logo">
+${this.getLogo()}
+                        </div>
+                        ${this.user ? `
+                        <div class="stats">
+                            <div class="stat-item">👤 ${this.user}</div>
+                            <div class="stat-item">📊 Уровень ${this.level}</div>
+                            <div class="stat-item">⚡ XP: ${this.xp}/${this.xpNeeded}</div>
+                            <div class="stat-item">✅ ${this.completedLessons.length} уроков</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${(this.xp/this.xpNeeded)*100}%"></div>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="menu">
+                        <button class="menu-btn" onclick="app.showMenu()">📋 ГЛАВНОЕ МЕНЮ</button>
+                        <button class="menu-btn" onclick="app.showLessons()">📖 УРОКИ</button>
+                        <button class="menu-btn" onclick="app.showPractice()">✍️ ПРАКТИКА</button>
+                        <button class="menu-btn" onclick="app.showTests()">📝 ТЕСТЫ</button>
+                        <button class="menu-btn" onclick="app.showProgress()">📊 ПРОГРЕСС</button>
+                        <button class="menu-btn" onclick="app.showProjects()">🎨 ПРОЕКТЫ</button>
+                        <button class="menu-btn" onclick="app.showProfile()">👤 ПРОФИЛЬ</button>
+                    </div>
+                `;
+            }
+            
+            getLogo() {
+                return `
+    ╔══════════════════════════════════════════════════════════╗
+    ║     ██   ██ ████████ ███    ███ ██      ███    ███      ║
+    ║     ██   ██    ██    ████  ████ ██      ████  ████      ║
+    ║     ███████    ██    ██ ████ ██ ██      ██ ████ ██      ║
+    ║     ██   ██    ██    ██  ██  ██ ██      ██  ██  ██      ║
+    ║     ██   ██    ██    ██      ██ ███████ ██      ██      ║
+    ║                      M A S T E R                        ║
+    ║              Полный курс HTML5 и CSS3                   ║
+    ╚══════════════════════════════════════════════════════════╝
+                `;
+            }
+            
+            getContent() {
+                switch(this.currentView) {
+                    case 'menu': return this.getMainMenu();
+                    case 'lessons': return this.getLessonsList();
+                    case 'lesson': return this.getLessonContent();
+                    case 'practice': return this.getPractice();
+                    case 'tests': return this.getTests();
+                    case 'progress': return this.getProgress();
+                    case 'projects': return this.getProjects();
+                    case 'profile': return this.getProfile();
+                    default: return this.getMainMenu();
+                }
+            }
+            
+            getMainMenu() {
+                if (!this.user) {
+                    return `
+                        <div class="content">
+                            <h2>👋 Добро пожаловать в HTML MASTER!</h2>
+                            <p>Представься, брат:</p>
+                            <input type="text" id="username" placeholder="Твое имя" value="${this.user || ''}">
+                            <button onclick="app.setUser()">Начать обучение</button>
+                        </div>
+                    `;
+                }
+                
+                return `
+                    <div class="content">
+                        <h2>📋 ГЛАВНОЕ МЕНЮ</h2>
+                        <p>Привет, ${this.user}! Что будем изучать?</p>
+                        
+                        <div style="display: grid; gap: 10px; margin-top: 20px;">
+                            <button class="menu-btn" onclick="app.showLessons()">📖 НАЧАТЬ ОБУЧЕНИЕ</button>
+                            <button class="menu-btn" onclick="app.showPractice()">🎯 ПРАКТИЧЕСКИЕ ЗАДАНИЯ</button>
+                            <button class="menu-btn" onclick="app.showTests()">📝 ТЕСТЫ И ЭКЗАМЕНЫ</button>
+                            <button class="menu-btn" onclick="app.showProgress()">📊 МОЙ ПРОГРЕСС</button>
+                            <button class="menu-btn" onclick="app.showProjects()">🎨 ПРОЕКТЫ ДЛЯ ПОРТФОЛИО</button>
+                            <button class="menu-btn" onclick="app.showProfile()">👤 ПРОФИЛЬ</button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            setUser() {
+                const name = document.getElementById('username').value;
+                if (name) {
+                    this.user = name;
+                    this.saveProgress();
+                    this.render();
+                }
+            }
+            
+            showMenu() {
+                this.currentView = 'menu';
+                this.render();
+            }
+            
+            showLessons() {
+                this.currentView = 'lessons';
+                this.render();
+            }
+            
+            getLessonsList() {
+                const lessons = [
+                    { num: "1", title: "Введение в HTML", desc: "Основы структуры документа" },
+                    { num: "2", title: "Теги и элементы", desc: "Заголовки, параграфы, списки" },
+                    { num: "3", title: "Ссылки и изображения", desc: "Навигация по сайту" },
+                    { num: "4", title: "Таблицы", desc: "Создание таблиц и их атрибуты" },
+                    { num: "5", title: "Формы", desc: "Регистрация, ввод данных" },
+                    { num: "6", title: "CSS Основы", desc: "Подключение стилей, селекторы" },
+                    { num: "7", title: "Цвета и фон", desc: "Работа с цветом, градиенты" },
+                    { num: "8", title: "Блочная модель", desc: "Margin, Padding, Border" },
+                    { num: "9", title: "Flexbox", desc: "Гибкая верстка" },
+                    { num: "10", title: "Grid", desc: "Современные сетки" },
+                    { num: "11", title: "Адаптивный дизайн", desc: "Медиа-запросы" },
+                    { num: "12", title: "Анимация", desc: "CSS transitions и animations" },
+                    { num: "13", title: "Псевдоклассы", desc: ":hover, :active, :nth-child" },
+                    { num: "14", title: "Псевдоэлементы", desc: "::before, ::after" },
+                    { num: "15", title: "Переменные в CSS", desc: "Custom properties" },
+                    { num: "16", title: "Финальный проект", desc: "Верстка Landing Page" }
+                ];
+                
+                let html = `
+                    <div class="content">
+                        <h2>📖 КУРС HTML/CSS</h2>
+                        <div class="lesson-list">
+                `;
+                
+                lessons.forEach(lesson => {
+                    const isCompleted = this.completedLessons.includes(lesson.title);
+                    html += `
+                        <div class="lesson-item ${isCompleted ? 'completed' : ''}" 
+                             onclick="app.showLesson('${lesson.num}')">
+                            ${isCompleted ? '✅' : '📝'} Урок ${lesson.num}: ${lesson.title}
+                            <div style="font-size: 0.9em; opacity: 0.8;">└─ ${lesson.desc}</div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+                
+                return html;
+            }
+            
+            showLesson(num) {
+                this.currentLesson = num;
+                this.currentView = 'lesson';
+                this.render();
+            }
+            
+            getLessonContent() {
+                const lessons = {
+                    "1": {
+                        title: "Введение в HTML",
+                        theory: `
+    📚 ТЕОРИЯ: Основы HTML
+    
+    HTML (HyperText Markup Language) - это язык разметки веб-страниц.
+    Каждая HTML-страница имеет следующую структуру:
+    
+    &lt;!DOCTYPE html&gt;
+    &lt;html&gt;
+        &lt;head&gt;
+            &lt;title&gt;Заголовок страницы&lt;/title&gt;
+        &lt;/head&gt;
+        &lt;body&gt;
+            &lt;h1&gt;Мой первый сайт&lt;/h1&gt;
+            &lt;p&gt;Привет, мир!&lt;/p&gt;
+        &lt;/body&gt;
+    &lt;/html&gt;
+    
+    🔑 КЛЮЧЕВЫЕ ПОНЯТИЯ:
+    • Тег - элемент разметки (например, &lt;p&gt;)
+    • Атрибут - свойство тега (например, class="text")
+    • Контент - то, что внутри тега
+                        `,
+                        example: `
+    💻 ПРИМЕР КОДА:
+    
+    &lt;!DOCTYPE html&gt;
+    &lt;html&gt;
+        &lt;head&gt;
+            &lt;title&gt;Мой первый сайт&lt;/title&gt;
+        &lt;/head&gt;
+        &lt;body&gt;
+            &lt;h1&gt;Добро пожаловать!&lt;/h1&gt;
+            &lt;p&gt;Это мой первый &lt;b&gt;HTML&lt;/b&gt; документ.&lt;/p&gt;
+        &lt;/body&gt;
+    &lt;/html&gt;
+                        `,
+                        task: `
+    ✏️ ПРАКТИЧЕСКОЕ ЗАДАНИЕ:
+    
+    Создай HTML-страницу, которая содержит:
+    1. Заголовок "Моя визитка"
+    2. Параграф с твоим именем
+    3. Параграф с твоим возрастом
+    4. Жирный текст "HTML - это просто!"
+                        `
+                    },
+                    "2": {
+                        title: "Теги и элементы",
+                        theory: `
+    📚 ТЕОРИЯ: Основные HTML теги
+    
+    ЗАГОЛОВКИ:
+    &lt;h1&gt; - Самый главный заголовок
+    &lt;h2&gt; - Заголовок второго уровня
+    &lt;h3&gt; - Заголовок третьего уровня
+    
+    ТЕКСТ:
+    &lt;p&gt; - Параграф (абзац)
+    &lt;b&gt; - Жирный текст
+    &lt;i&gt; - Курсив
+    &lt;u&gt; - Подчеркнутый
+    
+    СПИСКИ:
+    &lt;ul&gt;
+        &lt;li&gt;Первый пункт&lt;/li&gt;
+        &lt;li&gt;Второй пункт&lt;/li&gt;
+    &lt;/ul&gt;
+                        `,
+                        example: `
+    💻 ПРИМЕР КОДА:
+    
+    &lt;h1&gt;Резюме программиста&lt;/h1&gt;
+    &lt;h2&gt;Навыки:&lt;/h2&gt;
+    &lt;ul&gt;
+        &lt;li&gt;HTML&lt;/li&gt;
+        &lt;li&gt;CSS&lt;/li&gt;
+    &lt;/ul&gt;
+                        `
+                    }
+                };
+                
+                const lesson = lessons[this.currentLesson] || {
+                    title: "Урок в разработке",
+                    theory: "Скоро здесь будет материал!",
+                    example: ""
+                };
+                
+                const isCompleted = this.completedLessons.includes(lesson.title);
+                
+                return `
+                    <div class="content">
+                        <h2>УРОК ${this.currentLesson}: ${lesson.title}</h2>
+                        
+                        <div class="code-block">${lesson.theory}</div>
+                        
+                        ${lesson.example ? `
+                            <h3>Пример:</h3>
+                            <div class="code-block">${lesson.example}</div>
+                        ` : ''}
+                        
+                        ${lesson.task ? `
+                            <div class="task">
+                                <h3>Задание:</h3>
+                                <div>${lesson.task}</div>
+                            </div>
+                            
+                            ${!isCompleted ? `
+                                <button onclick="app.completeLesson('${lesson.title}')">
+                                    ✅ Отметить как пройденный (+20 XP)
+                                </button>
+                            ` : '<p>✅ Урок уже пройден</p>'}
+                        ` : ''}
+                        
+                        <button onclick="app.showLessons()" style="margin-top: 20px;">
+                            ← К списку уроков
+                        </button>
+                    </div>
+                `;
+            }
+            
+            completeLesson(title) {
+                if (!this.completedLessons.includes(title)) {
+                    this.completedLessons.push(title);
+                    this.xp += 20;
+                    
+                    if (this.xp >= this.xpNeeded) {
+                        this.levelUp();
+                    }
+                    
+                    this.saveProgress();
+                    this.render();
+                }
+            }
+            
+            showPractice() {
+                this.currentView = 'practice';
+                this.render();
+            }
+            
+            getPractice() {
+                return `
+                    <div class="content">
+                        <h2>🎯 ПРАКТИЧЕСКИЕ ЗАДАНИЯ</h2>
+                        
+                        <div class="task">
+                            <h3>Задание 1: Визитная карточка (+30 XP)</h3>
+                            <p>Создай HTML-страницу с информацией о себе</p>
+                            <button onclick="app.startTask(1)">Начать</button>
+                        </div>
+                        
+                        <div class="task">
+                            <h3>Задание 2: Меню ресторана (+50 XP)</h3>
+                            <p>Сверстай меню с ценами</p>
+                            <button onclick="app.startTask(2)">Начать</button>
+                        </div>
+                        
+                        <div class="task">
+                            <h3>Задание 3: Форма регистрации (+70 XP)</h3>
+                            <p>Создай форму с разными полями</p>
+                            <button onclick="app.startTask(3)">Начать</button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            startTask(num) {
+                this.showMessage(`Задание ${num} запущено! Создай HTML-файл и сохрани его.`);
+                this.xp += 30;
+                this.saveProgress();
+                this.render();
+            }
+            
+            showTests() {
+                this.currentView = 'tests';
+                this.currentTest = 0;
+                this.testAnswers = [];
+                this.render();
+            }
+            
+            getTests() {
+                const questions = [
+                    {
+                        q: "Какой тег создает параграф?",
+                        options: ["&lt;p&gt;", "&lt;par&gt;", "&lt;text&gt;", "&lt;pg&gt;"],
+                        correct: 0,
+                        xp: 10
+                    },
+                    {
+                        q: "Какой атрибут задает путь к картинке?",
+                        options: ["href", "src", "link", "path"],
+                        correct: 1,
+                        xp: 10
+                    },
+                    {
+                        q: "Как создать заголовок самого большого размера?",
+                        options: ["&lt;h1&gt;", "&lt;head&gt;", "&lt;h6&gt;", "&lt;title&gt;"],
+                        correct: 0,
+                        xp: 10
+                    }
+                ];
+                
+                if (this.currentTest >= questions.length) {
+                    const totalXp = this.testAnswers.reduce((sum, ans) => sum + ans.xp, 0);
+                    return `
+                        <div class="content">
+                            <h2>📝 РЕЗУЛЬТАТ ТЕСТА</h2>
+                            <p>Правильных ответов: ${this.testAnswers.filter(a => a.correct).length}/${questions.length}</p>
+                            <p>Получено XP: ${totalXp}</p>
+                            <button onclick="app.showMenu()">В меню</button>
+                        </div>
+                    `;
+                }
+                
+                const q = questions[this.currentTest];
+                
+                return `
+                    <div class="content">
+                        <h2>📝 Вопрос ${this.currentTest + 1} из ${questions.length}</h2>
+                        <p>${q.q}</p>
+                        <div class="options">
+                            ${q.options.map((opt, idx) => `
+                                <button class="option-btn" onclick="app.answerQuestion(${idx}, ${q.correct}, ${q.xp})">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            answerQuestion(answer, correct, xp) {
+                const isCorrect = answer === correct;
+                this.testAnswers.push({
+                    correct: isCorrect,
+                    xp: isCorrect ? xp : 0
+                });
+                
+                if (isCorrect) {
+                    this.xp += xp;
+                    if (this.xp >= this.xpNeeded) {
+                        this.levelUp();
+                    }
+                }
+                
+                this.currentTest++;
+                this.saveProgress();
+                this.render();
+            }
+            
+            showProgress() {
+                this.currentView = 'progress';
+                this.render();
+            }
+            
+            getProgress() {
+                const percent = (this.xp / this.xpNeeded) * 100;
+                
+                return `
+                    <div class="content">
+                        <h2>📊 МОЙ ПРОГРЕСС</h2>
+                        
+                        <p>👤 Ученик: ${this.user}</p>
+                        <p>📈 Уровень: ${this.level}</p>
+                        <p>⚡ XP: ${this.xp}/${this.xpNeeded}</p>
+                        
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percent}%"></div>
+                        </div>
+                        
+                        <p>✅ Пройдено уроков: ${this.completedLessons.length}</p>
+                        
+                        ${this.completedLessons.length > 0 ? `
+                            <h3>Изученные темы:</h3>
+                            <ul>
+                                ${this.completedLessons.map(l => `<li>• ${l}</li>`).join('')}
+                            </ul>
+                        ` : ''}
+                        
+                        <p>🎯 До следующего уровня: ${this.xpNeeded - this.xp} XP</p>
+                    </div>
+                `;
+            }
+            
+            showProjects() {
+                this.currentView = 'projects';
+                this.render();
+            }
+            
+            getProjects() {
+                return `
+                    <div class="content">
+                        <h2>🎨 ПРОЕКТЫ ДЛЯ ПОРТФОЛИО</h2>
+                        
+                        <div class="task">
+                            <h3>🌐 Сайт-визитка (+300 XP)</h3>
+                            <p>Простой одностраничный сайт</p>
+                        </div>
+                        
+                        <div class="task">
+                            <h3>📱 Интернет-магазин (+500 XP)</h3>
+                            <p>Каталог товаров с карточками</p>
+                        </div>
+                        
+                        <div class="task">
+                            <h3>📰 Блог (+400 XP)</h3>
+                            <p>Страница с постами и комментариями</p>
+                        </div>
+                        
+                        <p>💡 Выбери проект и сделай его идеально!</p>
+                    </div>
+                `;
+            }
+            
+            showProfile() {
+                this.currentView = 'profile';
+                this.render();
+            }
+            
+            getProfile() {
+                const now = new Date();
+                
+                return `
+                    <div class="content">
+                        <h2>👤 ПРОФИЛЬ</h2>
+                        
+                        <p>👋 Привет, ${this.user}!</p>
+                        <p>📅 Дата: ${now.toLocaleDateString()}</p>
+                        <p>🏆 Уровень: ${this.level}</p>
+                        <p>💪 XP: ${this.xp}</p>
+                        <p>📚 Уроков пройдено: ${this.completedLessons.length}</p>
+                        
+                        <button onclick="app.resetProgress()" style="margin-top: 20px; background: #ff0000; border-color: #ff0000;">
+                            🔄 Сбросить прогресс
+                        </button>
+                    </div>
+                `;
+            }
+            
+            resetProgress() {
+                if (confirm('Точно сбросить весь прогресс?')) {
+                    localStorage.removeItem('htmlMasterProgress');
+                    this.user = null;
+                    this.level = 1;
+                    this.xp = 0;
+                    this.xpNeeded = 100;
+                    this.completedLessons = [];
+                    this.render();
+                }
+            }
+        }
+        
+        const app = new HTMLMasterJS();
+    </script>
+</body>
+</html>
